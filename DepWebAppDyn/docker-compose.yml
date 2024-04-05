@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "8084:80"
+    environment:
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: password
+      WORDPRESS_DB_NAME: wordpress
+    networks:
+      - wp-network
+    volumes:
+      - wordpress-data:/var/www/html
+    depends_on:
+      - mariadb
+    labels:
+      description: "Dep du service wordpress"
+      department: "IT"
+  
+  mariadb:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: password
+    networks:
+      - wp-network
+    volumes:
+      - db_data:/var/lib/mysql
+    labels:
+      description: "Service MariaDB"
+      department: "IT"
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    ports:
+      - "8282:80"
+    environment:
+      PMA_HOST: mariadb
+      MYSQL_ROOT_PASSWORD: password
+    networks:
+      - wp-network
+    depends_on:
+      - mariadb
+    labels:
+      description: "Dep de la BDD pour l'application WebDyn WP"
+      department: "IT"
+
+networks:
+  wp-network:
+    driver: bridge
+
+volumes:
+  wordpress-data:
+  db_data:

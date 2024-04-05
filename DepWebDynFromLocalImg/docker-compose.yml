@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # Service WordPress
+  wordpress:
+    # Construction de l'image à partir du Dockerfile personnalisé
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Publication du port 8080 du conteneur vers le port 80 de l'hôte
+    ports:
+      - "8383:80"
+    # Variables d'environnement pour la connexion à la base de données MariaDB
+    environment:
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: password
+      WORDPRESS_DB_NAME: wordpress
+    # Liaison au réseau personnalisé wp-network
+    networks:
+      - wp-network
+    # Utilisation d'un volume pour persister les données de WordPress
+    volumes:
+      - wordpress_data:/var/www/html
+    # Dépendance du service WordPress sur le service MariaDB
+    depends_on:
+      - mariadb
+    # Étiquettes pour une meilleure gestion et identification des services
+    labels:
+      description: "Service WordPress"
+      department: "IT"
+
+  # Service MariaDB
+  mariadb:
+    # Utilisation de l'image MariaDB officielle
+    image: mariadb:latest
+    # Configuration des variables d'environnement pour MariaDB
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: password
+    # Liaison au réseau personnalisé wp-network
+    networks:
+      - wp-network
+    # Utilisation d'un volume pour persister les données de MariaDB
+    volumes:
+      - db_data:/var/lib/mysql
+    # Étiquettes pour une meilleure gestion et identification des services
+    labels:
+      description: "Service MariaDB"
+      department: "IT"
+
+  # Service phpMyAdmin
+  phpmyadmin:
+    # Utilisation de l'image phpMyAdmin officielle
+    image: phpmyadmin/phpmyadmin:latest
+    # Publication du port 8181 du conteneur vers le port 80 de l'hôte
+    ports:
+      - "8686:80"
+    # Configuration des variables d'environnement pour phpMyAdmin
+    environment:
+      PMA_HOST: mariadb
+      MYSQL_ROOT_PASSWORD: password
+    # Liaison au réseau personnalisé wp-network
+    networks:
+      - wp-network
+    # Dépendance du service phpMyAdmin sur le service MariaDB
+    depends_on:
+      - mariadb
+    # Étiquettes pour une meilleure gestion et identification des services
+    labels:
+      description: "Service phpMyAdmin"
+      department: "IT"
+
+# Configuration du réseau personnalisé
+networks:
+  wp-network:
+    driver: bridge
+
+# Définition des volumes
+volumes:
+  wordpress_data:
+  db_data:
