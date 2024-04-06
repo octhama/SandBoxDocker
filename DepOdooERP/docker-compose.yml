@@ -2,7 +2,7 @@ version: '3.1'
 
 services:
   db:
-    image: postgres:15
+    image: postgres:latest
     restart: always
     environment:
       - POSTGRES_PASSWORD=odoo
@@ -20,7 +20,7 @@ services:
         max-size: "10m"
 
   odoo:
-    image: odoo:17.0
+    image: odoo:latest
     restart: always
     depends_on:
       - db
