@@ -1,0 +1,67 @@
+services:
+  db-postgres:
+    image: postgres:16.2-alpine3.19
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: doli_pass
+      POSTGRES_DB: dolidb
+    ports:
+      - "3500:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    command: ["postgres", "-c", "max_connections=200"]
+    networks:
+      - dolibarr-network
+
+  dolibarr:
+    image: tuxgasy/dolibarr:latest
+    restart: always
+    ports:
+      - "5045:80"
+    environment:
+      DOLI_DB_HOST: db-postgres
+      DOLI_DB_PORT: 5432
+      DOLI_DB_NAME: dolidb
+      DOLI_DB_USER: dolibarrdbuser
+      DOLI_DB_PASSWORD: doli_pass
+      DOLI_URL_ROOT: http://localhost:5045
+      PHP_INI_DATE_TIMEZONE: Europe/Brussels
+      DOLI_INSTALL_AUTO: 1
+      DOLI_PROD: 1
+      DOLI_ADMIN_LOGIN: admin
+      DOLI_ADMIN_PASSWORD: admin
+      DOLI_DB_TYPE: pgsql
+    networks:
+      - dolibarr-network
+    volumes:
+      - dolibarr-data:/var/www/html  # Dolibarr data
+      - dolibarr_docs:/var/www/documents  # Dolibarr documents
+      - dolibarr-config:/var/www/html/config  # Dolibarr configurations
+    depends_on:
+      - db-postgres
+
+  pgadmin4:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: your_email@example.com
+      PGADMIN_DEFAULT_PASSWORD: azerty12345
+      PGADMIN_LISTEN_PORT: 8080
+    ports:
+      - "5040:8080"
+    networks:
+      - dolibarr-network
+    depends_on:
+      - db-postgres
+
+volumes:
+  postgres-data:
+  dolibarr-data:
+  dolibarr_docs:
+  dolibarr-config:
+
+networks:
+  dolibarr-network:
+    driver: bridge

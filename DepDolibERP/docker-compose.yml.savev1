@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb
+    restart: always
+    volumes:
+      - ./dolibarr_db:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=dolibarr
+      - MYSQL_USER=dolibarr
+      - MYSQL_PASSWORD=3caracteresetcestbon
+      - MYSQL_ROOT_PASSWORD=4caracteresetcestbon
+      - MYSQL_RANDOM_ROOT_PASSWORD=no
+
+  dolibarr:
+    image: tuxgasy/dolibarr:latest
+    container_name: dolibarr
+    restart: always
+    links:
+        - mariadb
+    ports:
+        - "8200:80"
+    environment:
+      - DOLI_ADMIN_LOGIN=admin
+      - DOLI_ADMIN_PASSWORD=admin
+      - DOLI_DB_HOST=mariadb
+      - DOLI_DB_NAME=dolibarr
+      - DOLI_DB_USER=dolibarr
+      - DOLI_DB_PASSWORD=5caracteresetcestbon
+      - PHP_INI_DATE_TIMEZONE=Europe/Brussels
+      - DOLI_URL_ROOT=https://doyouwannaplaywith.me
+      - DOLI_HTTPS=https://doyouwannaplaywith.me
+    volumes:
+      - dolibarr_html:/var/www/html
+      - dolibarr_docs:/var/www/documents
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - "8211:80"
+    environment:
+      - PMA_HOST=mariadb
+      - MYSQL_ROOT_PASSWORD=4caracteresetcestbon   # Utilisez le mot de passe root de votre base de données
+
+volumes:
+  dolibarr_html:
+  dolibarr_docs:

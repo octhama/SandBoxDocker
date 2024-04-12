@@ -1,0 +1,58 @@
+version: '3'
+
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb
+    restart: always
+    volumes:
+      - ./dolibarr_db:/var/lib/mysql
+    networks:
+      - dolibarr-network
+    environment:
+      - MYSQL_ROOT_PASSWORD=4caracteresetcestbon
+      - MYSQL_RANDOM_ROOT_PASSWORD=no
+
+  dolibarr:
+    image: tuxgasy/dolibarr:latest
+    container_name: dolibarr
+    restart: always
+    ports:
+      - "8200:80"
+    networks:
+      - dolibarr-network
+    environment:
+      - DOLI_INSTALL_AUTO=1
+      - DOLI_ADMIN_LOGIN=admin
+      - DOLI_ADMIN_PASSWORD=admin
+      - DOLI_DB_HOST=mariadb
+      - DOLI_DB_NAME=dolibarr
+      - DOLI_DB_USER=dolibarr
+      - DOLI_DB_PASSWORD=3caracteresetcestbon
+      - PHP_INI_DATE_TIMEZONE=Europe/Brussels
+      - DOLI_HTTPS=https://doyouwannaplaywith.me
+    volumes:
+      - dolibarr_html:/var/www/html
+      - dolibarr_docs:/var/www/documents
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - "8211:80"
+    networks:
+      - dolibarr-network
+    environment:
+      - PMA_HOST=mariadb
+      - PMA_USER=dolibarr
+      - PMA_PASSWORD=3caracteresetcestbon
+      - MYSQL_ROOT_PASSWORD=4caracteresetcestbon
+
+volumes:
+  dolibarr_html:
+  dolibarr_docs:
+
+networks:
+  dolibarr-network:
+    driver: bridge

@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+  # PostgreSQL database
+  db-postgres:
+    image: postgres:latest
+    container_name: db-postgres
+    restart: always
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=dolibarr
+      - POSTGRES_PASSWORD=4caracteresetcestbon
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+
+  # Dolibarr application
+  web-dolibarr:
+    image: tuxgasy/dolibarr:latest
+    container_name: web-dolibarr
+    restart: always
+    depends_on:
+      - db-postgres
+    ports:
+      - "8500:80"
+    environment:
+      - DOLI_INSTALL_AUTO=1
+      - DOLI_ADMIN_LOGIN=admin
+      - DOLI_ADMIN_PASSWORD=admin
+      - DOLI_DB_HOST=postgres
+      - DOLI_DB_NAME=dolibarr
+      - DOLI_DB_USER=dolibarr
+      - DOLI_DB_PASSWORD=4caracteresetcestbon
+      - PHP_INI_DATE_TIMEZONE=Europe/Brussels
+      - DOLI_URL_ROOT='http://185.216.26.228:8500/'
+    volumes:
+      - dolibarr_html:/var/www/html
+      - dolibarr_docs:/var/www/documents
+    networks:
+      - dolibarr-network
+
+  # pgAdmin for PostgreSQL administration
+  pgadmin:
+    image: dpage/pgadmin4:latest  # Use pgadmin4 for version 4
+    container_name: pgadmin
+    restart: always
+    ports:
+      - "8212:80"  # Adjust port if needed
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=your_email@example.com  # Optional for password reset
+      - PGADMIN_DEFAULT_PASSWORD=pgadminpassword  # Set a strong password
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin  # Persist pgAdmin data
+
+volumes:
+  dolibarr_html: {}
+  dolibarr_docs: {}
+  pgadmin_data: {}  # Optional, for persisting pgAdmin data
+
+networks:
+  dolibarr-network:
+    driver: bridge
