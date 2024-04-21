@@ -11,5 +11,5 @@ limit_time_real = 1200
 max_cron_threads = 5
 workers = 2
 proxy_mode = True
-admin_passwd = $pbkdf2-sha512$600000$6H1vzXnP2fufk9L6v1fK2Q$gPe8Xzptm1n3MdBatbo0dLwlDxLW7vPFZYG4pTMbhiSn6W56U9UZj.pLDBVGHDGSh01AfIDhGNSVkbU2ItQFaw
+#admin_passwd = $pbkdf2-sha512$600000$qtWaU6qVUqoVotRa6x1DaA$RuMb5V.h7s0fgC8TZKOds0S3Up11z/nOYLju7ecMrs4VqZo1DP2T/v9Vu6IN8egBqdJsM6TiVDXJSXmXtuzj4Q
 
