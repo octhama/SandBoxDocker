@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2020-08-27T20:55:08Z"
+  labels:
+    app: my-php-fpm
+  name: svc-my-php-fpm-headless
+  namespace: default
+  resourceVersion: "12561"
+  selfLink: /api/v1/namespaces/default/services/svc-my-php-fpm-headless
+  uid: fc524635-6de3-46ba-b2e3-34190f087e55
+spec:
+  clusterIP: None
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: my-php-fpm
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}

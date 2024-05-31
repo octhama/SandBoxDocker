@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: my-nginx
+  name: my-nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-nginx
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: my-nginx
+    spec:
+      volumes:
+      - name: image
+        hostPath:
+          path: /mnt/image
+          type: DirectoryOrCreate
+      containers:
+      - image: bitnami/nginx:latest
+        name: nginx
+        resources: {}
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: image
+status: {}

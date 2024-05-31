@@ -1,0 +1,96 @@
+apiVersion: v1
+data:
+  VCL: varnish
+  default.vcl.tmpl: |
+    vcl 4.0;
+
+    import std;
+    import directors;
+
+    // ".Frontends" is a slice that contains all known Varnish instances
+    // (as selected by the service specified by -frontend-service).
+    // The backend name needs to be the Pod name, since this value is compared
+    // to the server identity ("server.identity" [1]) later.
+    //
+    //   [1]: https://varnish-cache.org/docs/6.4/reference/vcl.html#local-server-remote-and-client
+    {{ range .Frontends }}
+    backend {{ .Name }} {
+        .host = "{{ .Host }}";
+        .port = "{{ .Port }}";
+    }
+    {{- end }}
+
+    backend fe-primary {
+        .host = "{{ .PrimaryFrontend.Host }}";
+        .port = "{{ .PrimaryFrontend.Port }}";
+    }
+
+    {{ range .Backends }}
+    backend be-{{ .Name }} {
+        .host = "{{ .Host }}";
+        .port = "{{ .Port }}";
+    }
+    {{- end }}
+
+    backend be-primary {
+        .host = "{{ .PrimaryBackend.Host }}";
+        .port = "{{ .PrimaryBackend.Port }}";
+    }
+
+    acl purgers {
+        "127.0.0.1";
+        "localhost";
+        "::1";
+        {{- range .Frontends }}
+        "{{ .Host }}";
+        {{- end }}
+        {{- range .Backends }}
+        "{{ .Host }}";
+        {{- end }}
+    }
+
+    sub vcl_init {
+        new cluster = directors.hash();
+
+        {{ range .Frontends -}}
+        cluster.add_backend({{ .Name }}, 1);
+        {{ end }}
+
+        new lb = directors.round_robin();
+
+        {{ range .Backends -}}
+        lb.add_backend(be-{{ .Name }});
+        {{ end }}
+    }
+
+    sub vcl_recv
+    {
+        # Set backend hint for non cachable objects.
+        set req.backend_hint = lb.backend();
+
+        # ...
+
+        # Routing logic. Pass a request to an appropriate Varnish node.
+        # See https://info.varnish-software.com/blog/creating-self-routing-varnish-cluster for more info.
+        unset req.http.x-cache;
+        set req.backend_hint = cluster.backend(req.url);
+        set req.http.x-shard = req.backend_hint;
+        if (req.http.x-shard != server.identity) {
+            return(pass);
+        }
+        set req.backend_hint = lb.backend();
+
+        # ...
+
+        return(hash);
+    }
+
+    # ...
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2020-08-28T01:31:24Z"
+  name: my-varnish-template
+  namespace: default
+  resourceVersion: "41221"
+  selfLink: /api/v1/namespaces/default/configmaps/my-varnish-template
+  uid: 55eb8c43-5314-47e3-a25c-49b51dcf7127

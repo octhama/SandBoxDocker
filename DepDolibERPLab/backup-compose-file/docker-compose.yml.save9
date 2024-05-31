@@ -1,0 +1,68 @@
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb
+    restart: always
+    environment:
+      - MYSQL_DATABASE=dolibarrdb
+      - MYSQL_USER=dolibarruser
+      - MYSQL_PASSWORD=4caracteresetcestbon
+      - MYSQL_ROOT_PASSWORD=5caracteresetcestbon
+    volumes:
+      - ./dolibarr_db:/var/lib/mysql
+    networks:
+      - dolibarr-network
+
+  dolibarr:
+    image: tuxgasy/dolibarr:latest
+    container_name: dolibarr
+    restart: always
+    depends_on:
+      - mariadb
+    ports:
+      - "8200:80"
+    environment:
+      - DOLI_INSTALL_AUTO=1
+      - DOLI_DB_TYPE=mysqli
+      - DOLI_DB_PREFIX='table'
+      - DOLI_DB_CHARACTER_SET=utf8
+      - DOLI_DB_COLLATION=utf8_unicode_ci
+      - DOLI_DB_ROOT_LOGIN=root
+      - DOLI_DB_ROOT_PASSWORD=myrootpass
+      - DOLI_PROD=1
+      - DOLI_ADMIN_LOGIN=admin
+      - DOLI_ADMIN_PASSWORD=admin
+      - DOLI_DB_HOST=mariadb
+      - DOLI_DB_NAME=dolibarrdb
+      - DOLI_DB_USER=dolibarruser
+      - DOLI_DB_PASSWORD=4caracteresetcestbon
+      - PHP_INI_DATE_TIMEZONE=Europe/Brussels
+      - DOLI_HTTPS=0
+      - DOLI_HTTPS=1
+      - DOLI_HTTPS=2
+      - DOLI_HTTPS=https://doyouwannaplaywith.me
+    volumes:
+      - dolibarr_html:/var/www/html
+      - dolibarr_docs:/var/www/documents
+    networks:
+      - dolibarr-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: always
+    networks:
+      - dolibarr-network
+    ports:
+      - "8211:80"
+    environment:
+      - PMA_HOST=mariadb
+      - MYSQL_ROOT_PASSWORD=5caracteresetcestbon
+
+volumes:
+  dolibarr_html:
+  dolibarr_docs:
+
+networks:
+  dolibarr-network:
+    driver: bridge

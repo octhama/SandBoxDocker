@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: my-php-fpm
+  name: my-php-fpm
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-php-fpm
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: my-php-fpm
+    spec:
+      volumes:
+      - name: image
+        hostPath:
+          path: /mnt/image
+          type: DirectoryOrCreate
+      containers:
+      - image: bitnami/php-fpm:latest
+        name: php-fpm
+        resources: {}
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: image
+status: {}
